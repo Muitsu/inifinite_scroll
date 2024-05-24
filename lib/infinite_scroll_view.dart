@@ -4,7 +4,7 @@ class InfiniteScrollView extends StatefulWidget {
   final bool enableRefresh;
   final int? totalData;
   final int itemCount;
-  final void Function(int page) onLoadMore;
+  final void Function(int page)? onLoadMore;
   final Future<void> Function()? onRefresh;
   final Widget Function(BuildContext ctx, int idx) itemBuilder;
   final Widget? loadingWidget;
@@ -17,7 +17,7 @@ class InfiniteScrollView extends StatefulWidget {
     required this.itemCount,
     this.emptyPlaceholder,
     this.loadingWidget,
-    required this.onLoadMore,
+    this.onLoadMore,
     this.onRefresh,
   });
 
@@ -36,20 +36,22 @@ class _InfiniteScrollViewState extends State<InfiniteScrollView> {
     controller.addListener(() {
       if (controller.position.maxScrollExtent == controller.offset) {
         isHasData = !(widget.itemCount == 0 ||
-            widget.itemCount >= (widget.totalData ?? 0));
+            widget.itemCount >= (widget.totalData ?? widget.itemCount));
         if (!isHasData) return;
         currentCount++;
-        widget.onLoadMore(currentCount);
+        if (widget.onLoadMore != null) {
+          widget.onLoadMore!(currentCount);
+        }
         setState(() {});
       }
     });
   }
 
   int _setData() {
-    return itemLength =
-        ((widget.itemCount == 0 || widget.itemCount >= (widget.totalData ?? 0))
-            ? widget.itemCount
-            : widget.itemCount + 1);
+    return itemLength = ((widget.itemCount == 0 ||
+            widget.itemCount >= (widget.totalData ?? widget.itemCount))
+        ? widget.itemCount
+        : widget.itemCount + 1);
   }
 
   @override
